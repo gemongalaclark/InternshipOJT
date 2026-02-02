@@ -39,6 +39,32 @@
     font-size: 1rem;
 }
 
+.topBarRight {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.forfeitBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-full);
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forfeitBtn:hover {
+    background: rgba(233, 69, 96, 0.3);
+    border-color: #e94560;
+    transform: scale(1.1);
+}
+
 .timer {
     background: rgba(255, 255, 255, 0.1);
     padding: 0.5rem 1rem;
@@ -51,6 +77,105 @@
 .timerWarning {
     background: #e53e3e;
     animation: pulse 0.5s ease infinite;
+}
+
+/* Forfeit Modal */
+.forfeitModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.forfeitContent {
+    background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    border: 3px solid #e94560;
+    animation: scaleIn 0.3s ease;
+}
+
+.forfeitIcon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.forfeitTitle {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 0.75rem;
+}
+
+.forfeitText {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.forfeitActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.forfeitConfirmBtn {
+    padding: 0.875rem 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.forfeitConfirmBtn:hover {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    transform: translateY(-2px);
+}
+
+.forfeitCancelBtn {
+    padding: 0.875rem 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #48BB78, #38A169);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.forfeitCancelBtn:hover {
+    background: linear-gradient(135deg, #68D391, #48BB78);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5);
 }
 
 /* Battlefield */
@@ -363,22 +488,47 @@
 }
 
 .answerInput {
-    width: 120px;
-    padding: 1rem;
-    font-size: 1.5rem;
+    width: 140px;
+    padding: 1rem 1.5rem;
+    font-size: 2rem;
     font-family: 'Fredoka', sans-serif;
     font-weight: 700;
     text-align: center;
-    border: 3px solid #667eea;
-    border-radius: var(--radius-lg);
-    background: rgba(255, 255, 255, 0.95);
+    border: 4px solid #667eea;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff, #f0f0f0);
     color: #1a1a2e;
+    box-shadow:
+        0 6px 0 #4a5cd6,
+        0 8px 20px rgba(102, 126, 234, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    /* Hide default number spinners */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Hide spinners for Chrome, Safari, Edge */
+.answerInput::-webkit-outer-spin-button,
+.answerInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
 }
 
 .answerInput:focus {
     outline: none;
     border-color: #ffd700;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    box-shadow:
+        0 6px 0 #cc9900,
+        0 0 30px rgba(255, 215, 0, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+}
+
+.answerInput::placeholder {
+    color: #aaa;
+    font-size: 1.5rem;
 }
 
 .attackBtn {

@@ -55,6 +55,7 @@ function BattleContent() {
     const [userAnswer, setUserAnswer] = useState('');
     const [progress, setProgress] = useState<PlayerProgress | null>(null);
     const [playerAvatar, setPlayerAvatar] = useState('🦸');
+    const [showForfeitModal, setShowForfeitModal] = useState(false);
 
     // Load player avatar from localStorage
     useEffect(() => {
@@ -259,6 +260,15 @@ function BattleContent() {
         }
     };
 
+    const handleForfeit = () => {
+        setShowForfeitModal(false);
+        setBattleState(prev => prev ? {
+            ...prev,
+            playerHealth: 0,
+            isDefeat: true,
+        } : null);
+    };
+
     if (!battleState) {
         return (
             <main className={styles.main}>
@@ -407,13 +417,49 @@ function BattleContent() {
     return (
         <main className={styles.main}>
             <div className={styles.battleArena}>
+                {/* Forfeit Modal */}
+                {showForfeitModal && (
+                    <div className={styles.forfeitModal}>
+                        <div className={styles.forfeitContent}>
+                            <div className={styles.forfeitIcon}>🏳️</div>
+                            <h2 className={styles.forfeitTitle}>Forfeit Battle?</h2>
+                            <p className={styles.forfeitText}>
+                                Are you sure you want to give up? You will be defeated and won&apos;t earn any stars.
+                            </p>
+                            <div className={styles.forfeitActions}>
+                                <button
+                                    className={styles.forfeitConfirmBtn}
+                                    onClick={handleForfeit}
+                                >
+                                    😔 Yes, Forfeit
+                                </button>
+                                <button
+                                    className={styles.forfeitCancelBtn}
+                                    onClick={() => setShowForfeitModal(false)}
+                                >
+                                    ⚔️ Keep Fighting!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Top Bar */}
                 <div className={styles.topBar}>
                     <div className={styles.levelInfo}>
                         Level {battleState.level.id}: {battleState.level.name}
                     </div>
-                    <div className={`${styles.timer} ${battleState.timeLeft <= 5 ? styles.timerWarning : ''}`}>
-                        ⏱️ {battleState.timeLeft}s
+                    <div className={styles.topBarRight}>
+                        <button
+                            className={styles.forfeitBtn}
+                            onClick={() => setShowForfeitModal(true)}
+                            title="Forfeit Battle"
+                        >
+                            🏳️
+                        </button>
+                        <div className={`${styles.timer} ${battleState.timeLeft <= 5 ? styles.timerWarning : ''}`}>
+                            ⏱️ {battleState.timeLeft}s
+                        </div>
                     </div>
                 </div>
 
