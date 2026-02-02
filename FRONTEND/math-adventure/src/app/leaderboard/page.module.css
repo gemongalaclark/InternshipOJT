@@ -1,0 +1,177 @@
+.main {
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.backButton {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+}
+
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.title {
+    font-size: 2.5rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.125rem;
+}
+
+/* Leaderboard Card */
+.leaderboardCard {
+    margin-bottom: 2rem;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(108, 99, 255, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error */
+.error {
+    text-align: center;
+    padding: 2rem;
+}
+
+.error p {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* Empty State */
+.empty {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.emptyIcon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.empty h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Leaderboard List */
+.leaderboardList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Player Info */
+.playerInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.playerName {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.playerDetails {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Score Info */
+.scoreInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.scoreValue {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.starsSmall {
+    font-size: 0.75rem;
+}
+
+/* Actions */
+.actions {
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .header {
+        padding-top: 3rem;
+    }
+
+    .backButton {
+        top: -0.5rem;
+    }
+}

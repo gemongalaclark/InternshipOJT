@@ -1,0 +1,198 @@
+.main {
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 700px;
+    width: 100%;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.backButton {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+}
+
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.title {
+    font-size: 2rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Sections */
+.section {
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Name Input */
+.nameInput {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    border: 3px solid var(--primary);
+    border-radius: var(--radius-lg);
+    outline: none;
+    transition: all var(--transition-normal);
+}
+
+.nameInput:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
+}
+
+.nameInput::placeholder {
+    color: #AAA;
+}
+
+/* Difficulty Grid */
+.difficultyGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 500px) {
+    .difficultyGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.difficultyCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #E8E8FF, #F8F8FF);
+    border: 3px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.difficultyCard:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #D8D8FF, #F0F0FF);
+}
+
+.difficultyCard.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.gradeNumber {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.gradeLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Operation Grid */
+.operationGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 500px) {
+    .operationGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.operationCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #FFE8F0, #FFF8FA);
+    border: 3px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.operationCard:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #FFD8E8, #FFF0F5);
+}
+
+.operationCard.selected {
+    border-color: var(--secondary);
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    color: white;
+}
+
+.operationIcon {
+    font-size: 2rem;
+}
+
+.operationLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Start Section */
+.startSection {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.hint {
+    margin-top: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.5rem;
+        padding-left: 3rem;
+        padding-right: 0.5rem;
+    }
+
+    .backButton {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
