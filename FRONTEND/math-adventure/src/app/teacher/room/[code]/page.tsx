@@ -9,6 +9,8 @@ import {
     listenToParticipants,
     startRoom,
     endRoom,
+    closeRoom,
+    banStudent,
     Room,
     Participant,
 } from '@/lib/firebase';
@@ -99,9 +101,33 @@ export default function TeacherRoomPage() {
         setActionLoading(false);
     };
 
+    const handleCloseRoom = async () => {
+        if (!room || !confirm('Are you sure you want to close this room? Students will no longer be able to join, but all data will be preserved.')) return;
+        setActionLoading(true);
+        try {
+            await closeRoom(room.id);
+        } catch (err) {
+            console.error('Error closing room:', err);
+        }
+        setActionLoading(false);
+    };
+
     const copyRoomCode = () => {
         navigator.clipboard.writeText(roomCode);
         alert(`Room code ${roomCode} copied!`);
+    };
+
+    const handleBanStudent = async (participant: Participant) => {
+        if (!room) return;
+        const confirmBan = confirm(`Are you sure you want to ban ${participant.name} from this room? They will be removed and cannot rejoin.`);
+        if (!confirmBan) return;
+
+        try {
+            await banStudent(room.id, participant.id, participant.name);
+        } catch (err) {
+            console.error('Error banning student:', err);
+            alert('Failed to ban student. Please try again.');
+        }
     };
 
     if (loading) {
@@ -162,6 +188,7 @@ export default function TeacherRoomPage() {
                             {room.status === 'waiting' && 'Waiting for students...'}
                             {room.status === 'active' && '🎮 Game in Progress'}
                             {room.status === 'completed' && '✅ Game Completed'}
+                            {room.status === 'closed' && '🔒 Room Closed'}
                         </span>
                     </div>
 
@@ -186,6 +213,18 @@ export default function TeacherRoomPage() {
                         )}
                         {room.status === 'completed' && (
                             <span className={styles.completedText}>Game has ended</span>
+                        )}
+                        {room.status === 'closed' && (
+                            <span className={styles.completedText}>Room is closed</span>
+                        )}
+                        {(room.status === 'waiting' || room.status === 'active') && (
+                            <button
+                                className={styles.closeBtn}
+                                onClick={handleCloseRoom}
+                                disabled={actionLoading}
+                            >
+                                🔒 Close Room
+                            </button>
                         )}
                     </div>
                 </div>
@@ -277,6 +316,13 @@ export default function TeacherRoomPage() {
                                     {p.completedAt && (
                                         <span className={styles.completedBadge}>✅</span>
                                     )}
+                                    <button
+                                        className={styles.banBtn}
+                                        onClick={() => handleBanStudent(p)}
+                                        title={`Ban ${p.name}`}
+                                    >
+                                        🚫
+                                    </button>
                                 </div>
                             ))}
                         </div>

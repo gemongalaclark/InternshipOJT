@@ -7,6 +7,8 @@ import {
     joinRoom,
     listenToRoom,
     listenToParticipants,
+    isStudentBanned,
+    isRoomAccessible,
     Room,
     Participant,
 } from '@/lib/firebase';
@@ -49,6 +51,15 @@ export default function RoomPage() {
                     setLoading(false);
                     return;
                 }
+
+                // Check if room is still accessible (not closed, deadline not passed)
+                const accessCheck = isRoomAccessible(roomData);
+                if (!accessCheck.accessible) {
+                    setError(accessCheck.reason || 'This room is no longer accessible.');
+                    setLoading(false);
+                    return;
+                }
+
                 setRoom(roomData);
                 setLoading(false);
 
@@ -81,6 +92,14 @@ export default function RoomPage() {
 
         setJoining(true);
         try {
+            // Check if student is banned
+            const banned = await isStudentBanned(room.id, playerName);
+            if (banned) {
+                setError('You have been banned from this room by the teacher.');
+                setJoining(false);
+                return;
+            }
+
             const result = await joinRoom(roomCode, playerName, playerAvatar);
             if (result) {
                 setJoined(true);

@@ -8,7 +8,11 @@ import {
     getTeacherRooms,
     createRoom,
     deleteRoom,
+    getTeacherProfile,
+    updateTeacherProfile,
+    TeacherProfile,
     Room,
+    CustomQuestion,
 } from '@/lib/firebase';
 import { User } from 'firebase/auth';
 import styles from './page.module.css';
@@ -16,10 +20,20 @@ import styles from './page.module.css';
 export default function TeacherDashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
+    const [teacherProfile, setTeacherProfile] = useState<TeacherProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [savingProfile, setSavingProfile] = useState(false);
+
+    // Profile setup form state
+    const [profileForm, setProfileForm] = useState({
+        title: '' as 'Mr.' | 'Ms.' | 'Mrs.' | 'Dr.' | '',
+        schoolName: '',
+        gradeTeaching: '',
+    });
 
     // Form state for new room
     const [newRoom, setNewRoom] = useState({
@@ -29,12 +43,27 @@ export default function TeacherDashboard() {
         operation: 'addition',
         timeLimit: 300,
         monstersToDefeat: 5,
+        useCustomQuestions: false,
+        deadline: '',
     });
+
+    // Custom questions state
+    const [customQuestions, setCustomQuestions] = useState<{ question: string; answer: string }[]>([]);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChange(async (authUser) => {
             if (authUser) {
                 setUser(authUser);
+
+                // Check if profile is complete
+                const profile = await getTeacherProfile(authUser.uid);
+                setTeacherProfile(profile);
+
+                // Show profile setup modal if not complete
+                if (profile && !profile.profileComplete) {
+                    setShowProfileModal(true);
+                }
+
                 // Load rooms
                 const teacherRooms = await getTeacherRooms(authUser.uid);
                 setRooms(teacherRooms);
@@ -47,6 +76,35 @@ export default function TeacherDashboard() {
         return () => unsubscribe();
     }, [router]);
 
+    const handleSaveProfile = async () => {
+        if (!user || !profileForm.title || !profileForm.schoolName.trim() || !profileForm.gradeTeaching.trim()) {
+            return;
+        }
+
+        setSavingProfile(true);
+        try {
+            await updateTeacherProfile(user.uid, {
+                title: profileForm.title as 'Mr.' | 'Ms.' | 'Mrs.' | 'Dr.',
+                schoolName: profileForm.schoolName,
+                gradeTeaching: profileForm.gradeTeaching,
+            });
+
+            // Update local profile state
+            setTeacherProfile(prev => prev ? {
+                ...prev,
+                title: profileForm.title as 'Mr.' | 'Ms.' | 'Mrs.' | 'Dr.',
+                schoolName: profileForm.schoolName,
+                gradeTeaching: profileForm.gradeTeaching,
+                profileComplete: true,
+            } : null);
+
+            setShowProfileModal(false);
+        } catch (error) {
+            console.error('Error saving profile:', error);
+        }
+        setSavingProfile(false);
+    };
+
     const handleSignOut = async () => {
         await signOutUser();
         router.push('/teacher');
@@ -55,15 +113,40 @@ export default function TeacherDashboard() {
     const handleCreateRoom = async () => {
         if (!user || !newRoom.roomName.trim()) return;
 
+        // Validate custom questions if enabled
+        if (newRoom.useCustomQuestions && customQuestions.length === 0) {
+            alert('Please add at least one question or disable custom questions.');
+            return;
+        }
+
         setCreating(true);
         try {
-            const room = await createRoom(user.uid, user.displayName || 'Teacher', {
+            const teacherDisplayName = teacherProfile?.title
+                ? `${teacherProfile.title} ${user.displayName?.split(' ').pop() || 'Teacher'}`
+                : user.displayName || 'Teacher';
+
+            // Prepare custom questions with IDs
+            const questionsWithIds: CustomQuestion[] = customQuestions
+                .filter(q => q.question.trim() && q.answer.trim())
+                .map((q, index) => ({
+                    id: `q-${index}`,
+                    question: q.question.trim(),
+                    answer: parseFloat(q.answer),
+                }));
+
+            // Parse deadline
+            const deadline = newRoom.deadline ? new Date(newRoom.deadline) : undefined;
+
+            const room = await createRoom(user.uid, teacherDisplayName, {
                 roomName: newRoom.roomName,
                 gameMode: newRoom.gameMode,
                 difficulty: newRoom.difficulty,
                 operation: newRoom.operation,
                 timeLimit: newRoom.timeLimit,
-                monstersToDefeat: newRoom.monstersToDefeat,
+                monstersToDefeat: newRoom.useCustomQuestions ? questionsWithIds.length : newRoom.monstersToDefeat,
+                useCustomQuestions: newRoom.useCustomQuestions,
+                customQuestions: questionsWithIds,
+                deadline,
             });
 
             setRooms([room, ...rooms]);
@@ -75,7 +158,10 @@ export default function TeacherDashboard() {
                 operation: 'addition',
                 timeLimit: 300,
                 monstersToDefeat: 5,
+                useCustomQuestions: false,
+                deadline: '',
             });
+            setCustomQuestions([]);
         } catch (error) {
             console.error('Error creating room:', error);
         }
@@ -96,6 +182,15 @@ export default function TeacherDashboard() {
     const copyRoomCode = (code: string) => {
         navigator.clipboard.writeText(code);
         alert(`Room code ${code} copied to clipboard!`);
+    };
+
+    // Get display name with title
+    const getDisplayName = () => {
+        if (teacherProfile?.title) {
+            const lastName = user?.displayName?.split(' ').pop() || 'Teacher';
+            return `${teacherProfile.title} ${lastName}`;
+        }
+        return user?.displayName?.split(' ')[0] || 'Teacher';
     };
 
     if (loading) {
@@ -119,8 +214,13 @@ export default function TeacherDashboard() {
                             <img src={user.photoURL} alt="" className={styles.avatar} />
                         )}
                         <div>
-                            <h1 className={styles.greeting}>Hello, {user?.displayName?.split(' ')[0]}!</h1>
-                            <p className={styles.email}>{user?.email}</p>
+                            <h1 className={styles.greeting}>Hello, {getDisplayName()}!</h1>
+                            <p className={styles.email}>
+                                {teacherProfile?.schoolName
+                                    ? `${teacherProfile.schoolName} • Grade ${teacherProfile.gradeTeaching}`
+                                    : user?.email
+                                }
+                            </p>
                         </div>
                     </div>
                     <button className={styles.signOutBtn} onClick={handleSignOut}>
@@ -223,6 +323,59 @@ export default function TeacherDashboard() {
                 </div>
             </div>
 
+            {/* Profile Setup Modal - Shows for new teachers */}
+            {showProfileModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <h2 className={styles.modalTitle}>👋 Welcome to Math Adventure!</h2>
+                        <p className={styles.modalSubtitle}>Let&apos;s set up your teacher profile</p>
+
+                        <div className={styles.formGroup}>
+                            <label>How would you like to be called?</label>
+                            <div className={styles.titleSelector}>
+                                {(['Mr.', 'Ms.', 'Mrs.', 'Dr.'] as const).map((title) => (
+                                    <button
+                                        key={title}
+                                        className={`${styles.titleBtn} ${profileForm.title === title ? styles.active : ''}`}
+                                        onClick={() => setProfileForm({ ...profileForm, title })}
+                                    >
+                                        {title}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>School Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., Greenwood Elementary School"
+                                value={profileForm.schoolName}
+                                onChange={(e) => setProfileForm({ ...profileForm, schoolName: e.target.value })}
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>What grade(s) do you teach?</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., 3rd Grade or Grades 2-4"
+                                value={profileForm.gradeTeaching}
+                                onChange={(e) => setProfileForm({ ...profileForm, gradeTeaching: e.target.value })}
+                            />
+                        </div>
+
+                        <button
+                            className={styles.submitBtn}
+                            onClick={handleSaveProfile}
+                            disabled={!profileForm.title || !profileForm.schoolName.trim() || !profileForm.gradeTeaching.trim() || savingProfile}
+                        >
+                            {savingProfile ? 'Saving...' : '✨ Complete Setup'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Create Room Modal */}
             {showCreateModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
@@ -315,24 +468,117 @@ export default function TeacherDashboard() {
                             </div>
                         )}
 
+                        {/* Deadline for Assignment Mode */}
+                        {newRoom.gameMode === 'assignment' && (
+                            <div className={styles.formGroup}>
+                                <label>📅 Deadline (Optional)</label>
+                                <input
+                                    type="datetime-local"
+                                    value={newRoom.deadline}
+                                    onChange={(e) => setNewRoom({ ...newRoom, deadline: e.target.value })}
+                                    min={new Date().toISOString().slice(0, 16)}
+                                />
+                                <small className={styles.formHint}>Room will auto-close after deadline</small>
+                            </div>
+                        )}
+
+                        {/* Custom Questions Toggle */}
                         <div className={styles.formGroup}>
-                            <label>Monsters to Defeat</label>
-                            <select
-                                value={newRoom.monstersToDefeat}
-                                onChange={(e) => setNewRoom({ ...newRoom, monstersToDefeat: parseInt(e.target.value) })}
-                            >
-                                <option value={3}>3 monsters</option>
-                                <option value={5}>5 monsters</option>
-                                <option value={10}>10 monsters</option>
-                                <option value={15}>15 monsters</option>
-                                <option value={20}>20 monsters</option>
-                            </select>
+                            <label className={styles.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={newRoom.useCustomQuestions}
+                                    onChange={(e) => setNewRoom({ ...newRoom, useCustomQuestions: e.target.checked })}
+                                />
+                                <span>📝 Use my own questions</span>
+                            </label>
                         </div>
+
+                        {/* Auto-Generated Questions Config */}
+                        {!newRoom.useCustomQuestions && (
+                            <div className={styles.formGroup}>
+                                <label>Monsters to Defeat</label>
+                                <select
+                                    value={newRoom.monstersToDefeat}
+                                    onChange={(e) => setNewRoom({ ...newRoom, monstersToDefeat: parseInt(e.target.value) })}
+                                >
+                                    <option value={3}>3 monsters</option>
+                                    <option value={5}>5 monsters</option>
+                                    <option value={10}>10 monsters</option>
+                                    <option value={15}>15 monsters</option>
+                                    <option value={20}>20 monsters</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Custom Questions Builder */}
+                        {newRoom.useCustomQuestions && (
+                            <div className={styles.questionsBuilder}>
+                                <div className={styles.questionsHeader}>
+                                    <span>Your Questions ({customQuestions.length}/20)</span>
+                                    {customQuestions.length < 20 && (
+                                        <button
+                                            type="button"
+                                            className={styles.addQuestionBtn}
+                                            onClick={() => setCustomQuestions([...customQuestions, { question: '', answer: '' }])}
+                                        >
+                                            + Add Question
+                                        </button>
+                                    )}
+                                </div>
+
+                                {customQuestions.length === 0 && (
+                                    <p className={styles.questionsEmpty}>
+                                        No questions yet. Click &quot;Add Question&quot; to start!
+                                    </p>
+                                )}
+
+                                <div className={styles.questionsList}>
+                                    {customQuestions.map((q, index) => (
+                                        <div key={index} className={styles.questionItem}>
+                                            <span className={styles.questionNumber}>{index + 1}</span>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g., 5 + 3 = ?"
+                                                value={q.question}
+                                                onChange={(e) => {
+                                                    const updated = [...customQuestions];
+                                                    updated[index].question = e.target.value;
+                                                    setCustomQuestions(updated);
+                                                }}
+                                                className={styles.questionInput}
+                                            />
+                                            <input
+                                                type="number"
+                                                placeholder="Answer"
+                                                value={q.answer}
+                                                onChange={(e) => {
+                                                    const updated = [...customQuestions];
+                                                    updated[index].answer = e.target.value;
+                                                    setCustomQuestions(updated);
+                                                }}
+                                                className={styles.answerInput}
+                                            />
+                                            <button
+                                                type="button"
+                                                className={styles.removeQuestionBtn}
+                                                onClick={() => {
+                                                    const updated = customQuestions.filter((_, i) => i !== index);
+                                                    setCustomQuestions(updated);
+                                                }}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             className={styles.submitBtn}
                             onClick={handleCreateRoom}
-                            disabled={!newRoom.roomName.trim() || creating}
+                            disabled={!newRoom.roomName.trim() || creating || (newRoom.useCustomQuestions && customQuestions.length === 0)}
                         >
                             {creating ? 'Creating...' : '🚀 Create Room'}
                         </button>

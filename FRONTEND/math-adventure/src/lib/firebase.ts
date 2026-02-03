@@ -62,6 +62,10 @@ export interface TeacherProfile {
   email: string;
   displayName: string;
   photoURL: string | null;
+  title: 'Mr.' | 'Ms.' | 'Mrs.' | 'Dr.' | '';
+  schoolName: string;
+  gradeTeaching: string;
+  profileComplete: boolean;
   createdAt: Timestamp;
   lastLoginAt: Timestamp;
 }
@@ -72,12 +76,16 @@ async function createOrUpdateTeacher(user: User) {
   const teacherDoc = await getDoc(teacherRef);
 
   if (!teacherDoc.exists()) {
-    // New teacher - create profile
+    // New teacher - create profile (not complete until they fill in details)
     await setDoc(teacherRef, {
       uid: user.uid,
       email: user.email,
       displayName: user.displayName || 'Teacher',
       photoURL: user.photoURL,
+      title: '',
+      schoolName: '',
+      gradeTeaching: '',
+      profileComplete: false,
       createdAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),
     });
@@ -111,12 +119,20 @@ export interface Room {
   gameMode: 'timeTrial' | 'assignment';
   difficulty: number;
   operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | 'mixed';
-  status: 'waiting' | 'active' | 'completed';
+  status: 'waiting' | 'active' | 'completed' | 'closed';
   timeLimit: number; // seconds for time trial
   monstersToDefeat: number;
-  dueDate?: Timestamp; // for assignment mode
+  deadline?: Timestamp; // deadline for assignment mode (room auto-closes)
+  customQuestions?: CustomQuestion[]; // teacher's custom questions
+  useCustomQuestions: boolean; // whether to use custom or auto-generated
   createdAt: Timestamp;
   participantCount: number;
+}
+
+export interface CustomQuestion {
+  id: string;
+  question: string;
+  answer: number;
 }
 
 export interface Participant {
@@ -152,7 +168,9 @@ export async function createRoom(
     operation: string;
     timeLimit?: number;
     monstersToDefeat?: number;
-    dueDate?: Date;
+    deadline?: Date;
+    customQuestions?: CustomQuestion[];
+    useCustomQuestions?: boolean;
   }
 ): Promise<Room> {
   const roomCode = generateRoomCode();
@@ -168,7 +186,9 @@ export async function createRoom(
     status: 'waiting',
     timeLimit: roomData.timeLimit || 300,
     monstersToDefeat: roomData.monstersToDefeat || 5,
-    dueDate: roomData.dueDate ? Timestamp.fromDate(roomData.dueDate) : null,
+    deadline: roomData.deadline ? Timestamp.fromDate(roomData.deadline) : null,
+    customQuestions: roomData.customQuestions || [],
+    useCustomQuestions: roomData.useCustomQuestions || false,
     createdAt: serverTimestamp(),
     participantCount: 0,
   });
@@ -185,6 +205,9 @@ export async function createRoom(
     status: 'waiting',
     timeLimit: roomData.timeLimit || 300,
     monstersToDefeat: roomData.monstersToDefeat || 5,
+    deadline: roomData.deadline ? Timestamp.fromDate(roomData.deadline) : undefined,
+    customQuestions: roomData.customQuestions || [],
+    useCustomQuestions: roomData.useCustomQuestions || false,
     createdAt: Timestamp.now(),
     participantCount: 0,
   };
@@ -332,4 +355,117 @@ export async function deleteRoom(roomId: string) {
   await deleteDoc(roomRef);
 }
 
+// Close room (for deadline - keeps data but prevents access)
+export async function closeRoom(roomId: string) {
+  const roomRef = doc(db, 'rooms', roomId);
+  await updateDoc(roomRef, {
+    status: 'closed',
+    closedAt: serverTimestamp(),
+  });
+}
+
+// Check if room is still accessible (not closed and deadline not passed)
+export function isRoomAccessible(room: Room): { accessible: boolean; reason?: string } {
+  // Check if room is closed
+  if (room.status === 'closed') {
+    return { accessible: false, reason: 'This room has been closed by the teacher.' };
+  }
+
+  // Check if room is completed
+  if (room.status === 'completed') {
+    return { accessible: false, reason: 'This game has already ended.' };
+  }
+
+  // Check deadline for assignment mode
+  if (room.deadline && room.gameMode === 'assignment') {
+    const now = new Date();
+    const deadline = room.deadline.toDate();
+    if (now > deadline) {
+      return { accessible: false, reason: 'The deadline for this assignment has passed.' };
+    }
+  }
+
+  return { accessible: true };
+}
+
+// ==================== TEACHER PROFILE UPDATE ====================
+
+// Update teacher profile (for first-time setup)
+export async function updateTeacherProfile(
+  uid: string,
+  profileData: {
+    title: 'Mr.' | 'Ms.' | 'Mrs.' | 'Dr.';
+    schoolName: string;
+    gradeTeaching: string;
+  }
+) {
+  const teacherRef = doc(db, 'teachers', uid);
+  await updateDoc(teacherRef, {
+    title: profileData.title,
+    schoolName: profileData.schoolName,
+    gradeTeaching: profileData.gradeTeaching,
+    profileComplete: true,
+  });
+}
+
+// ==================== STUDENT BAN ====================
+
+// Ban a student from a room
+export async function banStudent(roomId: string, participantId: string, studentName: string) {
+  const roomRef = doc(db, 'rooms', roomId);
+  const roomDoc = await getDoc(roomRef);
+
+  if (roomDoc.exists()) {
+    const bannedList = roomDoc.data().bannedStudents || [];
+    if (!bannedList.some((b: { id: string }) => b.id === participantId)) {
+      bannedList.push({
+        id: participantId,
+        name: studentName,
+        bannedAt: new Date().toISOString(),
+      });
+      await updateDoc(roomRef, { bannedStudents: bannedList });
+    }
+  }
+
+  // Remove participant from room
+  const participantRef = doc(db, 'rooms', roomId, 'participants', participantId);
+  await deleteDoc(participantRef);
+}
+
+// Unban a student from a room
+export async function unbanStudent(roomId: string, participantId: string) {
+  const roomRef = doc(db, 'rooms', roomId);
+  const roomDoc = await getDoc(roomRef);
+
+  if (roomDoc.exists()) {
+    const bannedList = roomDoc.data().bannedStudents || [];
+    const updatedList = bannedList.filter((b: { id: string }) => b.id !== participantId);
+    await updateDoc(roomRef, { bannedStudents: updatedList });
+  }
+}
+
+// Check if a student is banned
+export async function isStudentBanned(roomId: string, studentName: string): Promise<boolean> {
+  const roomRef = doc(db, 'rooms', roomId);
+  const roomDoc = await getDoc(roomRef);
+
+  if (roomDoc.exists()) {
+    const bannedList = roomDoc.data().bannedStudents || [];
+    return bannedList.some((b: { name: string }) => b.name.toLowerCase() === studentName.toLowerCase());
+  }
+  return false;
+}
+
+// Get banned students list
+export async function getBannedStudents(roomId: string): Promise<Array<{ id: string; name: string; bannedAt: string }>> {
+  const roomRef = doc(db, 'rooms', roomId);
+  const roomDoc = await getDoc(roomRef);
+
+  if (roomDoc.exists()) {
+    return roomDoc.data().bannedStudents || [];
+  }
+  return [];
+}
+
 export { app, db, auth };
+

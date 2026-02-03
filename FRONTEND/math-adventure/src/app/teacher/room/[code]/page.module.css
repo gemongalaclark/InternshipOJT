@@ -205,6 +205,23 @@
     font-style: italic;
 }
 
+.closeBtn {
+    padding: 0.75rem 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.9rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 0.5rem;
+}
+
+.closeBtn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Settings Panel */
 .settingsPanel {
     display: flex;
@@ -379,6 +396,23 @@
 
 .completedBadge {
     font-size: 1.25rem;
+}
+
+.banBtn {
+    padding: 0.5rem;
+    background: rgba(233, 69, 96, 0.1);
+    border: 1px solid rgba(233, 69, 96, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.banBtn:hover {
+    background: rgba(233, 69, 96, 0.3);
+    border-color: #e94560;
+    opacity: 1;
 }
 
 /* Responsive */
