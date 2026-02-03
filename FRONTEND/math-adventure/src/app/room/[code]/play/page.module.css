@@ -1,0 +1,554 @@
+/* Multiplayer Battle Page */
+.main {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.battleContainer {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Loading Screen */
+.loadingScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: white;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Top Bar */
+.topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.roomInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.roomCodeSmall {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    align-self: flex-start;
+}
+
+.roomName {
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+}
+
+.scoreDisplay {
+    text-align: right;
+}
+
+.scoreValue {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #48BB78;
+}
+
+.scoreLabel {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+}
+
+/* Progress Section */
+.progressSection {
+    margin-bottom: 1rem;
+}
+
+.progressLabel {
+    color: white;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.progressBar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #48BB78, #68D391);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Battle Arena */
+.battleArena {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    flex: 1;
+}
+
+.playerSection,
+.monsterSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.playerCharacter,
+.monsterCharacter {
+    font-size: 4rem;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.playerCharacter.attacking {
+    animation: attack 0.5s ease;
+}
+
+@keyframes attack {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(30px);
+    }
+}
+
+.monsterCharacter.hurt {
+    animation: hurt 0.5s ease;
+}
+
+@keyframes hurt {
+
+    0%,
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    25% {
+        transform: translateX(-10px);
+        opacity: 0.5;
+    }
+
+    75% {
+        transform: translateX(10px);
+        opacity: 0.5;
+    }
+}
+
+.playerNameTag,
+.monsterName {
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.streakBadge {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.healthBar {
+    width: 80px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.healthFill {
+    height: 100%;
+    background: linear-gradient(90deg, #e94560, #ff6b6b);
+    transition: width 0.3s ease;
+}
+
+.vsDivider {
+    font-size: 2rem;
+    animation: vsPulse 2s ease-in-out infinite;
+}
+
+@keyframes vsPulse {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(10deg);
+    }
+}
+
+/* Timer */
+.timer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.timerRing {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 4px solid #48BB78;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.timerRing.urgent {
+    border-color: #e94560;
+    color: #e94560;
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-3px);
+    }
+
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+/* Problem Card */
+.problemCard {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.problemCard.correct {
+    background: #d4edda;
+    border: 2px solid #48BB78;
+}
+
+.problemCard.wrong {
+    background: #f8d7da;
+    border: 2px solid #e94560;
+}
+
+.problemText {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+/* Input Section */
+.inputSection {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.answerInput {
+    flex: 1;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    text-align: center;
+    border: 3px solid #667eea;
+    border-radius: 12px;
+    background: white;
+    color: #1a1a2e;
+    /* Hide spinners */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.answerInput::-webkit-outer-spin-button,
+.answerInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.answerInput:focus {
+    outline: none;
+    border-color: #764ba2;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
+}
+
+.submitBtn {
+    padding: 1rem 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.submitBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Mini Leaderboard */
+.miniLeaderboard {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: auto;
+}
+
+.miniLeaderboard h3 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.9rem;
+    color: white;
+    margin: 0 0 0.75rem 0;
+}
+
+.miniLeaderList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.miniLeaderItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.miniLeaderItem.me {
+    background: rgba(102, 126, 234, 0.3);
+    border: 1px solid #667eea;
+}
+
+.miniName {
+    flex: 1;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.miniScore {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    color: #48BB78;
+}
+
+/* Result Screen */
+.resultScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.resultCard {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.resultTitle {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    color: #1a1a2e;
+    margin: 0 0 1.5rem 0;
+}
+
+.resultStats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.resultStat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.resultValue {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.resultLabel {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.leaderboard {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.leaderboard h2 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    color: #1a1a2e;
+    margin: 0 0 1rem 0;
+}
+
+.leaderItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.leaderItem.me {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 2px solid #667eea;
+}
+
+.leaderRank {
+    font-size: 1.25rem;
+    min-width: 30px;
+}
+
+.leaderAvatar {
+    font-size: 1.5rem;
+}
+
+.leaderName {
+    flex: 1;
+    font-family: 'Fredoka', sans-serif;
+    color: #1a1a2e;
+}
+
+.leaderScore {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    color: #48BB78;
+}
+
+.homeBtn {
+    width: 100%;
+    padding: 1rem;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.homeBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .problemText {
+        font-size: 2rem;
+    }
+
+    .playerCharacter,
+    .monsterCharacter {
+        font-size: 3rem;
+        width: 70px;
+        height: 70px;
+    }
+}
