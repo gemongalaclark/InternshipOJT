@@ -343,15 +343,34 @@
 }
 
 .modal {
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, #1e1e3f, #1a1a2e);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 24px;
     padding: 2rem;
-    max-width: 500px;
+    max-width: 520px;
     width: 100%;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
     position: relative;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+    background: #667eea;
 }
 
 .modalClose {
@@ -441,6 +460,25 @@
     border-radius: 8px;
     color: white;
     transition: all 0.2s ease;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.formGroup select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.formGroup select option {
+    background: #1a1a2e;
+    color: white;
+    padding: 0.75rem;
+    font-family: 'Fredoka', sans-serif;
 }
 
 .formGroup input:focus,
@@ -452,6 +490,11 @@
 
 .formGroup input::placeholder {
     color: rgba(255, 255, 255, 0.4);
+}
+
+/* Datetime input styling */
+.formGroup input[type="datetime-local"] {
+    color-scheme: dark;
 }
 
 .formRow {
@@ -468,41 +511,45 @@
 }
 
 .modeBtn {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 16px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .modeBtn span:first-child {
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
 
 .modeBtn span:nth-child(2) {
     font-family: 'Fredoka', sans-serif;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     color: white;
 }
 
 .modeBtn small {
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
 .modeBtn:hover {
     border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
 }
 
 .modeBtn.active {
-    background: rgba(102, 126, 234, 0.2);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.2));
     border-color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
 }
 
 /* Submit Button */
