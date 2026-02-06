@@ -204,6 +204,32 @@
     animation: pulse 1s ease-in-out infinite;
 }
 
+/* Lives Display */
+.livesDisplay {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    justify-content: center;
+}
+
+.heart {
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.heartLost {
+    opacity: 0.3;
+    filter: grayscale(100%);
+    transform: scale(0.8);
+}
+
+.infiniteLives {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #48BB78;
+    text-shadow: 0 0 10px rgba(72, 187, 120, 0.5);
+}
+
 @keyframes pulse {
 
     0%,

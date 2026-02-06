@@ -45,6 +45,7 @@ interface GameState {
     feedback: 'correct' | 'wrong' | null;
     playerAttacking: boolean;
     streak: number;
+    lives: number; // -1 means infinite (assignment mode)
 }
 
 function getRandomOperation(operation: string): Operation {
@@ -103,6 +104,8 @@ function MultiplayerBattleContent() {
             if (!gameState && updatedRoom.status === 'active') {
                 const op = getRandomOperation(updatedRoom.operation);
                 const monster = MULTIPLAYER_MONSTERS[0];
+                // Time Trial: 3 lives, Assignment: infinite lives (-1)
+                const initialLives = updatedRoom.gameMode === 'timeTrial' ? 3 : -1;
                 setGameState({
                     currentMonster: 0,
                     monsterHealth: monster.maxHealth,
@@ -116,6 +119,7 @@ function MultiplayerBattleContent() {
                     feedback: null,
                     playerAttacking: false,
                     streak: 0,
+                    lives: initialLives,
                 });
                 setLoading(false);
             } else if (updatedRoom.status === 'active') {
@@ -148,6 +152,16 @@ function MultiplayerBattleContent() {
                     const newTotalAnswers = prev.totalAnswers + 1;
                     const op = getRandomOperation(room.operation);
 
+                    // Decrement lives in Time Trial mode
+                    let newLives = prev.lives;
+                    let isComplete = prev.isComplete;
+                    if (room.gameMode === 'timeTrial' && prev.lives > 0) {
+                        newLives = prev.lives - 1;
+                        if (newLives <= 0) {
+                            isComplete = true;
+                        }
+                    }
+
                     return {
                         ...prev,
                         timeLeft: 30,
@@ -155,6 +169,8 @@ function MultiplayerBattleContent() {
                         streak: 0,
                         currentProblem: generateProblem(room.difficulty as Difficulty, op),
                         feedback: 'wrong',
+                        lives: newLives,
+                        isComplete,
                     };
                 }
 
@@ -264,6 +280,17 @@ function MultiplayerBattleContent() {
         } else {
             // Wrong answer
             const op = getRandomOperation(room.operation);
+
+            // Decrement lives in Time Trial mode
+            let newLives = gameState.lives;
+            let isComplete = false;
+            if (room.gameMode === 'timeTrial' && gameState.lives > 0) {
+                newLives = gameState.lives - 1;
+                if (newLives <= 0) {
+                    isComplete = true;
+                }
+            }
+
             const newState: GameState = {
                 ...gameState,
                 currentProblem: generateProblem(room.difficulty as Difficulty, op),
@@ -271,6 +298,8 @@ function MultiplayerBattleContent() {
                 timeLeft: 30,
                 feedback: 'wrong',
                 streak: 0,
+                lives: newLives,
+                isComplete,
             };
 
             setGameState(newState);
@@ -308,7 +337,11 @@ function MultiplayerBattleContent() {
                 <div className={styles.resultScreen}>
                     <div className={styles.resultCard}>
                         <h1 className={styles.resultTitle}>
-                            {gameState?.isComplete ? '🎉 Quest Complete!' : '⏰ Time\'s Up!'}
+                            {gameState?.isComplete && gameState?.totalMonstersDefeated >= (room?.monstersToDefeat || 0)
+                                ? '🎉 Quest Complete!'
+                                : gameState?.isComplete && gameState?.lives === 0
+                                    ? '💔 Out of Lives!'
+                                    : '⏰ Time\'s Up!'}
                         </h1>
 
                         <div className={styles.resultStats}>
@@ -399,6 +432,21 @@ function MultiplayerBattleContent() {
                         {gameState.streak >= 2 && (
                             <div className={styles.streakBadge}>🔥 {gameState.streak}x</div>
                         )}
+                        {/* Lives Display */}
+                        <div className={styles.livesDisplay}>
+                            {gameState.lives === -1 ? (
+                                <span className={styles.infiniteLives}>∞</span>
+                            ) : (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <span
+                                        key={i}
+                                        className={`${styles.heart} ${i >= gameState.lives ? styles.heartLost : ''}`}
+                                    >
+                                        ❤️
+                                    </span>
+                                ))
+                            )}
+                        </div>
                     </div>
 
                     {/* VS Divider */}
